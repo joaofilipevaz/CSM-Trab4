@@ -32,17 +32,18 @@ def comprime():
 def cod_intraframe():
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 
-    video = cv2.VideoWriter('bola_intra.avi', fourcc, 1, (352, 240))
+    bola = cv2.VideoWriter('bola_intra.avi', fourcc, 20, (352, 240))
+    car = cv2.VideoWriter('car_intra.avi', fourcc, 20, (256, 256))
 
     for i in xrange(1, 12, 1):
 
-        # x_car = cv2.imread("output/car{}.jpeg".format(i))
+        bola.write(cv2.imread("output/bola_{}.jpeg".format(i)))
+        car.write(cv2.imread("output/car{}.jpeg".format(i)))
 
-        video.write(cv2.imread("output/bola_{}.jpeg".format(i)))
-
-    video.release()
+    bola.release()
+    car.release()
     cv2.destroyAllWindows()
 
 # 2
@@ -86,6 +87,7 @@ para o efeito).
 """
 Funções Auxiliares
 """
+
 
 # função auxiliar para calcular o SNR entre a imagem original e a comprimida
 def calculoSNR(imgOrig, imgComp):

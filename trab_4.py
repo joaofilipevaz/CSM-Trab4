@@ -7,12 +7,8 @@
 
 import cv2
 import numpy as np
-# import matplotlib.pyplot as plt
-from trab3Test import K3, K5
 from time import time
 from os import path
-import matplotlib
-
 
 
 # 1
@@ -23,10 +19,31 @@ cador já disponível
 """
 
 
-import cv2
-x_img = cv2.imread("bola_0x.tiff")
-cv2.imwrite("bola_0x.jpeg",x_img,(cv2.IMWRITE_JPEG_QUALITY,50))
+def comprime():
 
+    for i in xrange(1, 12, 1):
+
+        cv2.imwrite("output/bola_{}.jpeg".format(i), cv2.imread("samples/bola_{}.tiff".format(i)),
+                    (cv2.IMWRITE_JPEG_QUALITY, 50))
+        cv2.imwrite("output/car{}.jpeg".format(i), cv2.imread("samples/car{}.bmp".format(i)),
+                    (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+
+def cod_intraframe():
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+
+    video = cv2.VideoWriter('bola_intra.avi', fourcc, 1, (352, 240))
+
+    for i in xrange(1, 12, 1):
+
+        # x_car = cv2.imread("output/car{}.jpeg".format(i))
+
+        video.write(cv2.imread("output/bola_{}.jpeg".format(i)))
+
+    video.release()
+    cv2.destroyAllWindows()
 
 # 2
 
@@ -64,3 +81,83 @@ Visualizar a frame predita, e a frame diferença, bem como os vectores de movime
 para o efeito).
 """
 
+
+
+"""
+Funções Auxiliares
+"""
+
+# função auxiliar para calcular o SNR entre a imagem original e a comprimida
+def calculoSNR(imgOrig, imgComp):
+    PSinal = np.sum(imgComp**2.0)
+    PRuido = np.sum((imgOrig-imgComp)**2.0)
+    args = PSinal / PRuido
+    return np.round(10.0*np.log10(args), 3)
+
+
+"""
+Main
+"""
+
+def main():
+    print "========================================================================================================"
+    print "================================Analise Ficheiro lena================================" \
+          "======="
+
+
+
+    t1 = time()
+    print "O tempo necessário para efectuar a DCT e a Quantificação foi de {} segundos".format(round(t1 - t0, 3))
+
+
+
+    t2 = time()
+    print "O tempo necessário para efectuar a codificação DC foi de {} segundos".format(round(t2 - t1, 3))
+
+
+
+    t3 = time()
+    print "O tempo necessário para efectuar a codificação AC foi de {} segundos".format(round(t3 - t2, 3))
+
+
+
+    t4 = time()
+    print "O tempo necessário para o bloco de entropy coding (huffman) foi de {} segundos".format(round(t4 - t3, 3))
+
+
+
+    t5 = time()
+    print "O tempo necessário para a leitura do ficheiro e reconstrução do ac e dc foi de {} " \
+          "segundos".format(round(t5 - t4, 3))
+
+
+    t6 = time()
+    print "O tempo necessário para a descodificacao ac foi de {} segundos".format(round(t6 - t5, 3))
+
+
+
+    t7 = time()
+    print "O tempo necessário para a descodificacao dc foi de {} segundos".format(round(t7 - t6, 3))
+
+
+    t8 = time()
+    print "O tempo necessário para a dct inversa dc foi de {} segundos".format(round(t8 - t7, 3))
+
+
+    print "factor q = " + str(q)
+    print "alfa = " + str(alfa)
+    print "SNR = " + str(calculoSNR(x, x_rec))
+    size_ini = path.getsize("samples/lena.tiff")
+    size_end = path.getsize("Lena descodificada Q = {}.jpeg".format(q))
+    print "A dimensão do ficheiro original é de {} Kb".format(round(size_ini / 1024., 2))
+    print "A dimensão do ficheiro codificado é de {} Kb".format(round(size_end / 1024., 2))
+    print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
+    print "O saldo da compressão foi de {} Kb".format(round((size_ini - size_end) / 1024., 2))
+
+    print "========================================================================================================"
+    print "========================================================================================================"
+    print "========================================================================================================"
+    print
+    print
+
+main()

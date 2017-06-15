@@ -62,7 +62,7 @@ def intra_frame_coding():
         print "========================================================================================================"
 
 
-def converte_para_video():
+def converte_para_video_intra():
 
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
@@ -96,41 +96,63 @@ def inter_frame_coding():
     i_frame = cv2.imread("output/bola_1.jpeg")
 
     for i in xrange(1, 12, 1):
-        t0 = time()
 
         x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
 
         if i > 1:
+            t0 = time()
 
-            p_frame = i_frame - cv2.imread("output/bola_{}.jpeg".format(i))
+            p_frame = cv2.imread("output/bola_{}.jpeg".format(i)) - i_frame
 
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
 
             cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame)
 
-        t1 = time()
-        print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
-                                    round(t1 - t0, 4))
+            t1 = time()
+            print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
+                                        round(t1 - t0, 4))
 
-        # conversão e escrita com factor de qualidade 50
-        # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
+            # conversão e escrita com factor de qualidade 50
+            # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
-        print "ANALISE FRAME " + str(i)
-        # calculo SNR bola
-        print "SNR = " + str(calculoSNR(x_bola, p_frame))
+            print "ANALISE FRAME " + str(i)
+            # calculo SNR bola
+            print "SNR = " + str(calculoSNR(x_bola, p_frame))
 
-        size_ini = path.getsize("samples/bola_{}.tiff".format(i))
-        size_end = path.getsize("output/bola_{}.jpeg".format(i))
-        print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
-        print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
-        print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
+            size_ini = path.getsize("samples/bola_{}.tiff".format(i))
+            size_end = path.getsize("output/bola_{}.jpeg".format(i))
+            print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
+            print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
+            print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
 
-        # Calcula o histogram
-        h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
+            # Calcula o histogram
+            h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
 
-        entropia(p_frame.ravel(), gera_huffman(h))
+            entropia(p_frame.ravel(), gera_huffman(h))
         print "========================================================================================================"
+
+    def converte_para_video_inter():
+
+        # Define the codec and create VideoWriter object
+        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+
+        bola = cv2.VideoWriter('bola_inter.avi', fourcc, 20, (352, 240))
+        # car = cv2.VideoWriter('car_inter.avi', fourcc, 20, (256, 256))
+
+        iframe = cv2.imread("output/bola_1.jpeg")
+
+        bola.write(iframe)
+
+        for i in xrange(2, 12, 1):
+            pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(i))
+
+            bola.write(pframe)
+            # car.write(cv2.imread("output/car{}.jpeg".format(i)))
+
+        bola.release()
+        # car.release()
+        cv2.destroyAllWindows()
 
 
 # 3.1

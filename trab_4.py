@@ -147,7 +147,7 @@ def inter_frame_coding():
         for i in xrange(2, 12, 1):
             pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(i))
 
-            bola.write(pframe)
+            bola.write(iframe + pframe)
             # car.write(cv2.imread("output/car{}.jpeg".format(i)))
 
         bola.release()

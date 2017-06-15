@@ -26,6 +26,7 @@ def intra_frame_coding():
     print "========================================================================================================"
 
     for i in xrange(1, 12, 1):
+        t0 = time()
 
         # leitura imagem bola
         x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
@@ -37,6 +38,9 @@ def intra_frame_coding():
         cv2.imwrite("output/bola_{}.jpeg".format(i), x_bola, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
         x_bola_desc = cv2.imread("output/bola_{}.jpeg".format(i))
+
+        t1 = time()
+        print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,round(t1 - t0, 4))
 
         # conversão e escrita com factor de qualidade 50
         # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
@@ -58,7 +62,7 @@ def intra_frame_coding():
         print "========================================================================================================"
 
 
-def cod_intraframe():
+def converte_para_video():
 
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
@@ -82,6 +86,51 @@ Considerar que cada frame à excepção da primeira são inter-frames (P), ou se
 tipo (P). Neste codiﬁcador deve criar as P-frames, que são a diferença entre a frame a codiﬁcar e a I-frame, sem
 compensação de movimento. Visualize a P-frame (ou seja a imagem a transmitir).
 """
+
+
+def inter_frame_coding():
+    print "Analise INTER-FRAME"
+    print "========================================================================================================"
+
+    x_bola = cv2.imread("samples/bola_1.tiff")
+
+    # leitura imagem bola
+    i_frame = cv2.imread("output/bola_1.jpeg")
+
+    for i in xrange(2, 12, 1):
+        t0 = time()
+
+        x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
+
+        p_frame = i_frame - cv2.imread("output/bola_{}.jpeg".format(i))
+
+        # leitura imagem car
+        # x_car = cv2.imread("samples/car{}.bmp".format(i))
+
+        cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame)
+
+        t1 = time()
+        print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
+                                    round(t1 - t0, 4))
+
+        # conversão e escrita com factor de qualidade 50
+        # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+        print "ANALISE FRAME " + str(i)
+        # calculo SNR bola
+        print "SNR = " + str(calculoSNR(x_bola, p_frame))
+
+        size_ini = path.getsize("samples/bola_{}.tiff".format(i))
+        size_end = path.getsize("output/bola_{}.jpeg".format(i))
+        print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
+        print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
+        print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
+
+        # Calcula o histogram
+        h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
+
+        entropia(p_frame.ravel(), gera_huffman(h))
+        print "========================================================================================================"
 
 
 # 3.1
@@ -207,10 +256,14 @@ def entropia(x, tabela_codigo):
 Main
 """
 
-def main():
+
+def main(coding):
     print "========================================================================================================"
 
-    intra_frame_coding()
+    if coding == "intra":
+        intra_frame_coding()
+    elif coding == "inter":
+        inter_frame_coding()
 
     print "========================================================================================================"
     print "========================================================================================================"
@@ -218,4 +271,4 @@ def main():
     print
     print
 
-main()
+main("inter")

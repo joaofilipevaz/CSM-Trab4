@@ -54,7 +54,7 @@ def intra_frame_coding():
         # Calcula o histogram
         h, bins, patches = plt.hist(x_bola_desc.ravel(), np.max(x_bola_desc), [0, np.max(x_bola_desc)])
 
-        entropia(x_bola_desc, gera_huffman(h))
+        entropia(x_bola_desc.ravel(), gera_huffman(h))
         print "========================================================================================================"
 
 

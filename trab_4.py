@@ -166,12 +166,33 @@ predição da frame a codiﬁcar com base na I-frame fazendo a compensação de 
 """
 
 
+def erro_abs_medio(frame, frame_anterior):
+    altura = frame.shape[0]
+    largura = frame.shape[1]
+
+    n_blocos_horizontais = largura / 16
+    n_blocos_verticais = altura / 16
+
+    mae = []
+
+    for i in xrange(n_blocos_horizontais):
+        for z in xrange(n_blocos_verticais):
+            bloco_frame = frame[0+(z*16):16+(z*16), 0+(i*16):16+(i*16), 0]
+            bloco_frame_anterior = frame_anterior[0+(z*16):16+(z*16), 0+(i*16):16+(i*16), 0]
+
+            mae.append(np.mean(abs(bloco_frame.astype(np.float) - bloco_frame_anterior.astype(np.float))))
+
+    return mae
+
+
 # 3.2
 
 """
 3.2. uma função que faça uma pesquisa (pode escolher a full-search ou outra) do bloco da frame a codiﬁcar
 numa janela de pesquisa (-15 a +15) da I-frame;
 """
+
+
 
 
 # 3.3

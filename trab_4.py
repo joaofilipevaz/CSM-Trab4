@@ -92,22 +92,22 @@ def inter_frame_coding():
     print "Analise INTER-FRAME"
     print "========================================================================================================"
 
-    x_bola = cv2.imread("samples/bola_1.tiff")
-
     # leitura imagem bola
     i_frame = cv2.imread("output/bola_1.jpeg")
 
-    for i in xrange(2, 12, 1):
+    for i in xrange(1, 12, 1):
         t0 = time()
 
         x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
 
-        p_frame = i_frame - cv2.imread("output/bola_{}.jpeg".format(i))
+        if i > 1:
 
-        # leitura imagem car
-        # x_car = cv2.imread("samples/car{}.bmp".format(i))
+            p_frame = i_frame - cv2.imread("output/bola_{}.jpeg".format(i))
 
-        cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame)
+            # leitura imagem car
+            # x_car = cv2.imread("samples/car{}.bmp".format(i))
+
+            cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame)
 
         t1 = time()
         print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,

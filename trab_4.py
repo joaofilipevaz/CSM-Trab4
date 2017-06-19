@@ -167,7 +167,7 @@ predição da frame a codiﬁcar com base na I-frame fazendo a compensação de 
 3.1. uma função para fazer a medição do erro absoluto médio entre dois blocos (tamanho 16 × 16);
 """
 
-
+"""
 def erro_abs_medio(frame, frame_anterior):
     altura = frame.shape[0]
     largura = frame.shape[1]
@@ -185,6 +185,12 @@ def erro_abs_medio(frame, frame_anterior):
             mae.append(np.mean(abs(bloco_frame.astype(np.float) - bloco_frame_anterior.astype(np.float))))
 
     return mae
+"""
+
+
+def erro_abs_medio(bloco_actual, bloco_anterior):
+
+    return np.mean(abs(bloco_actual.astype(np.float) - bloco_anterior.astype(np.float)))
 
 
 # 3.2
@@ -195,7 +201,24 @@ numa janela de pesquisa (-15 a +15) da I-frame;
 """
 
 
-#def fullsearch(frame, frame_anterior):
+def fullsearch(i_frame, bloco_codificar, pos_bloco):
+
+    altura = i_frame.shape[0]
+    largura = i_frame.shape[1]
+
+    dim_janela_pesquisa = 15
+
+    resultados_pesquisa = np.zeros((16, 16))
+
+    for x in xrange(dim_janela_pesquisa):
+        for y in xrange(dim_janela_pesquisa):
+            if pos_bloco[0] - x > 0 and pos_bloco[1] - y > 0 and pos_bloco[0] + x < largura and pos_bloco[1] +\
+                    y < altura:
+                i_bloco = i_frame[pos_bloco[0]+(x*16):(pos_bloco[0]+16)+(y*16), pos_bloco[1]+(0*16):(pos_bloco[1]+16)+(0*16), 0]
+
+                erro_abs_medio(bloco_codificar, i_bloco)
+
+
 
 
 
@@ -206,6 +229,66 @@ numa janela de pesquisa (-15 a +15) da I-frame;
 Visualizar a frame predita, e a frame diferença, bem como os vectores de movimento (use a função pylab.quiver
 para o efeito).
 """
+
+
+def block_motion_compensation():
+
+    print "Analise INTER-FRAME com BLOCK MOTION COMPENSATION"
+    print "========================================================================================================"
+
+    # leitura imagem bola
+    i_frame = cv2.imread("samples/bola_1.tiff")
+
+    # cv2.imwrite("output/bola_iframe_1.jpeg", i_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+    for i in xrange(1, 12, 1):
+
+        x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
+
+        if i > 1:
+            t0 = time()
+
+            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
+
+            # leitura imagem car
+            # x_car = cv2.imread("samples/car{}.bmp".format(i))
+
+            cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+            t1 = time()
+            print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
+                                        round(t1 - t0, 4))
+
+            # conversão e escrita com factor de qualidade 50
+            # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+            print "ANALISE FRAME " + str(i)
+            # calculo SNR bola
+            print "SNR = " + str(calculoSNR(x_bola, p_frame))
+
+            size_ini = path.getsize("samples/bola_{}.tiff".format(i))
+            size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
+            print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
+            print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
+            print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
+
+            # Calcula o histogram
+            h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
+
+            entropia(p_frame.ravel(), gera_huffman(h))
+        print "========================================================================================================"
+
+
+
+    altura = frame.shape[0]
+    largura = frame.shape[1]
+
+    n_blocos_horizontais = largura / 16
+    n_blocos_verticais = altura / 16
+
+    for i in xrange(n_blocos_horizontais):
+        for z in xrange(n_blocos_verticais):
+            bloco_frame = frame[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
 
 

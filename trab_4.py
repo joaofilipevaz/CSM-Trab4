@@ -93,7 +93,9 @@ def inter_frame_coding():
     print "========================================================================================================"
 
     # leitura imagem bola
-    i_frame = cv2.imread("output/bola_1.jpeg")
+    i_frame = cv2.imread("samples/bola_1.tiff")
+
+    cv2.imwrite("output/bola_iframe_1.jpeg", i_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
     for i in xrange(1, 12, 1):
 
@@ -102,12 +104,12 @@ def inter_frame_coding():
         if i > 1:
             t0 = time()
 
-            p_frame = cv2.imread("output/bola_{}.jpeg".format(i)) - i_frame
+            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
 
-            cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame)
+            cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
@@ -121,7 +123,7 @@ def inter_frame_coding():
             print "SNR = " + str(calculoSNR(x_bola, p_frame))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
-            size_end = path.getsize("output/bola_{}.jpeg".format(i))
+            size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
@@ -140,12 +142,12 @@ def inter_frame_coding():
         bola = cv2.VideoWriter('bola_inter.avi', fourcc, 20, (352, 240))
         # car = cv2.VideoWriter('car_inter.avi', fourcc, 20, (256, 256))
 
-        iframe = cv2.imread("output/bola_1.jpeg")
+        iframe = cv2.imread("output/bola_iframe_1.jpeg")
 
         bola.write(iframe)
 
         for i in xrange(2, 12, 1):
-            pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(i))
+            pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(i)) - 128
 
             bola.write(iframe + pframe)
             # car.write(cv2.imread("output/car{}.jpeg".format(i)))
@@ -192,6 +194,8 @@ def erro_abs_medio(frame, frame_anterior):
 numa janela de pesquisa (-15 a +15) da I-frame;
 """
 
+
+#def fullsearch(frame, frame_anterior):
 
 
 

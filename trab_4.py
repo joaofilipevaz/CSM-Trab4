@@ -167,26 +167,6 @@ predição da frame a codiﬁcar com base na I-frame fazendo a compensação de 
 3.1. uma função para fazer a medição do erro absoluto médio entre dois blocos (tamanho 16 × 16);
 """
 
-"""
-def erro_abs_medio(frame, frame_anterior):
-    altura = frame.shape[0]
-    largura = frame.shape[1]
-
-    n_blocos_horizontais = largura / 16
-    n_blocos_verticais = altura / 16
-
-    mae = []
-
-    for i in xrange(n_blocos_horizontais):
-        for z in xrange(n_blocos_verticais):
-            bloco_frame = frame[0+(z*16):16+(z*16), 0+(i*16):16+(i*16), 0]
-            bloco_frame_anterior = frame_anterior[0+(z*16):16+(z*16), 0+(i*16):16+(i*16), 0]
-
-            mae.append(np.mean(abs(bloco_frame.astype(np.float) - bloco_frame_anterior.astype(np.float))))
-
-    return mae
-"""
-
 
 def erro_abs_medio(bloco_actual, bloco_anterior):
 
@@ -264,7 +244,22 @@ def block_motion_compensation():
         if i > 1:
             t0 = time()
 
-            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
+            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) + 128
+
+            altura = p_frame.shape[0]
+            largura = p_frame.shape[1]
+
+            n_blocos_horizontais = largura / 16
+            n_blocos_verticais = altura / 16
+
+            for x in xrange(n_blocos_horizontais):
+                for y in xrange(n_blocos_verticais):
+                    bloco_p_frame = p_frame[0 + (x * 16):16 + (x * 16), 0 + (y * 16):16 + (y * 16), 0]
+                    # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
+
+                    eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(i_frame, bloco_p_frame, (x,y))
+
+            # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))

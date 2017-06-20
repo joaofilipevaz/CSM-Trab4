@@ -208,7 +208,7 @@ def fullsearch(i_frame, bloco_p_frame, pos_bloco):
 
     dim_janela_pesquisa = 15
 
-    eam_min = 10000000
+    eam_min = 100000
 
     coor_bloco_cod = (0, 0)
 

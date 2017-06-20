@@ -234,9 +234,7 @@ def fullsearch(i_frame, bloco_p_frame, pos_bloco):
                     bloco_a_codificar = i_bloco_neg
                     coor_bloco_cod = (x_pesquisa_neg, y_pesquisa_neg)
 
-    return coor_bloco_cod, bloco_a_codificar
-
-
+    return eam_min, coor_bloco_cod, bloco_a_codificar
 
 
 

@@ -210,13 +210,25 @@ def fullsearch(i_frame, bloco_codificar, pos_bloco):
 
     resultados_pesquisa = np.zeros((16, 16))
 
-    for x in xrange(dim_janela_pesquisa):
-        for y in xrange(dim_janela_pesquisa):
-            if pos_bloco[0] - x > 0 and pos_bloco[1] - y > 0 and pos_bloco[0] + x < largura and pos_bloco[1] +\
-                    y < altura:
-                i_bloco = i_frame[pos_bloco[0]+(x*16):(pos_bloco[0]+16)+(y*16), pos_bloco[1]+(0*16):(pos_bloco[1]+16)+(0*16), 0]
+    bloco_match = 10000000
 
-                erro_abs_medio(bloco_codificar, i_bloco)
+    for x in xrange(dim_janela_pesquisa+1):
+        for y in xrange(dim_janela_pesquisa+1):
+            x_pesquisa_pos = pos_bloco[0] + x
+            y_pesquisa_pos = pos_bloco[1] + y
+            x_pesquisa_neg = pos_bloco[0] - x
+            y_pesquisa_neg = pos_bloco[1] - y
+            if x_pesquisa_neg >= 0 and y_pesquisa_neg >= 0 and x_pesquisa_pos < largura and y_pesquisa_pos < altura:
+                i_bloco_pos = i_frame[x_pesquisa_pos:x_pesquisa_pos+16, y_pesquisa_pos:y_pesquisa_pos+16, 0]
+                i_bloco_neg = i_frame[x_pesquisa_neg:x_pesquisa_neg+16, y_pesquisa_neg:y_pesquisa_neg+16, 0]
+                eam_pos = erro_abs_medio(bloco_codificar, i_bloco_pos)
+                if eam_pos < bloco_match:
+                    bloco_match = eam_pos
+                eam_neg = erro_abs_medio(bloco_codificar, i_bloco_neg)
+                if eam_neg < bloco_match:
+                    bloco_match = eam_neg
+
+    return bloco_match
 
 
 

@@ -181,10 +181,10 @@ numa janela de pesquisa (-15 a +15) da I-frame;
 """
 
 
-def fullsearch(i_frame, bloco_p_frame, pos_bloco):
+def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
 
-    altura = i_frame.shape[0]
-    largura = i_frame.shape[1]
+    altura = frame_anterior.shape[0]
+    largura = frame_anterior.shape[1]
 
     dim_janela_pesquisa = 15
 
@@ -201,8 +201,8 @@ def fullsearch(i_frame, bloco_p_frame, pos_bloco):
             x_pesquisa_neg = pos_bloco[0] - x
             y_pesquisa_neg = pos_bloco[1] - y
             if x_pesquisa_neg >= 0 and y_pesquisa_neg >= 0 and x_pesquisa_pos < largura and y_pesquisa_pos < altura:
-                i_bloco_pos = i_frame[x_pesquisa_pos:x_pesquisa_pos+16, y_pesquisa_pos:y_pesquisa_pos+16, 0]
-                i_bloco_neg = i_frame[x_pesquisa_neg:x_pesquisa_neg+16, y_pesquisa_neg:y_pesquisa_neg+16, 0]
+                i_bloco_pos = frame_anterior[x_pesquisa_pos:x_pesquisa_pos + 16, y_pesquisa_pos:y_pesquisa_pos + 16, 0]
+                i_bloco_neg = frame_anterior[x_pesquisa_neg:x_pesquisa_neg + 16, y_pesquisa_neg:y_pesquisa_neg + 16, 0]
                 eam_pos = erro_abs_medio(bloco_p_frame, i_bloco_pos)
                 if eam_pos < eam_min:
                     eam_min = eam_pos
@@ -233,38 +233,46 @@ def block_motion_compensation():
     print "========================================================================================================"
 
     # leitura imagem bola
-    i_frame = cv2.imread("samples/bola_1.tiff")
+    # i_frame = cv2.imread("samples/bola_1.tiff")
 
     # cv2.imwrite("output/bola_iframe_1.jpeg", i_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
     for i in xrange(1, 12, 1):
 
-        x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
-
         if i > 1:
             t0 = time()
 
-            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) + 128
+            frame_anterior = cv2.imread("samples/bola_{}.tiff".format(i-1))
+
+            p_frame = cv2.imread("samples/bola_{}.tiff".format(i))
 
             altura = p_frame.shape[0]
             largura = p_frame.shape[1]
+
+            frame_predita = np.zeros((altura, largura))
 
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
             for x in xrange(n_blocos_horizontais):
                 for y in xrange(n_blocos_verticais):
-                    bloco_p_frame = p_frame[0 + (x * 16):16 + (x * 16), 0 + (y * 16):16 + (y * 16), 0]
+                    bloco_p_frame = p_frame[(x * 16):16 + (x * 16), (y * 16):16 + (y * 16), 0]
                     # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
-                    eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(i_frame, bloco_p_frame, (x,y))
+                    eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((x * 16), (y * 16)))
+                    print coor_bloco_cod
+                    print bloco_a_codificar.shape
+
+                    frame_predita[coor_bloco_cod[0]:16 + (x * 16), coor_bloco_cod[1]:16 + (y * 16)] = bloco_a_codificar
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
 
-            cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
+            cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+            frame_diff =
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
@@ -275,7 +283,7 @@ def block_motion_compensation():
 
             print "ANALISE FRAME " + str(i)
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(x_bola, p_frame))
+            print "SNR = " + str(calculoSNR(frame_anterior, p_frame))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
             size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))

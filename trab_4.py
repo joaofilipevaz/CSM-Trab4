@@ -11,6 +11,7 @@ from time import time
 import matplotlib.pyplot as plt
 import Queue
 from os import path
+import sys
 
 
 # 1
@@ -188,34 +189,44 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
 
     dim_janela_pesquisa = 15
 
-    eam_min = 100000
+    eam_min = sys.maxint
 
     coor_bloco_cod = (0, 0)
 
     bloco_a_codificar = np.zeros((16, 16))
 
-    for x in xrange(dim_janela_pesquisa+1):
-        for y in xrange(dim_janela_pesquisa+1):
-            x_pesquisa_pos = pos_bloco[0] + x
-            y_pesquisa_pos = pos_bloco[1] + y
-            x_pesquisa_neg = pos_bloco[0] - x
-            y_pesquisa_neg = pos_bloco[1] - y
-            if x_pesquisa_neg >= 0 and y_pesquisa_neg >= 0 and x_pesquisa_pos < largura and y_pesquisa_pos < altura:
-                i_bloco_pos = frame_anterior[x_pesquisa_pos:x_pesquisa_pos + 16, y_pesquisa_pos:y_pesquisa_pos + 16, 0]
-                i_bloco_neg = frame_anterior[x_pesquisa_neg:x_pesquisa_neg + 16, y_pesquisa_neg:y_pesquisa_neg + 16, 0]
-                eam_pos = erro_abs_medio(bloco_p_frame, i_bloco_pos)
-                if eam_pos < eam_min:
-                    eam_min = eam_pos
-                    bloco_a_codificar = i_bloco_pos
-                    coor_bloco_cod = (x_pesquisa_pos, y_pesquisa_pos)
-                eam_neg = erro_abs_medio(bloco_p_frame, i_bloco_neg)
-                if eam_neg < eam_min:
-                    eam_min = eam_neg
-                    bloco_a_codificar = i_bloco_neg
-                    coor_bloco_cod = (x_pesquisa_neg, y_pesquisa_neg)
+    lim_hor_esq = pos_bloco[0] - dim_janela_pesquisa
+    lim_ver_sup = pos_bloco[1] - dim_janela_pesquisa
+    lim_hor_drt = pos_bloco[0] + 16 + dim_janela_pesquisa
+    lim_ver_inf = pos_bloco[1] + 16 + dim_janela_pesquisa
+
+    if lim_hor_esq < 0:
+        lim_hor_esq = 0
+
+    if lim_hor_drt >= largura:
+        lim_hor_drt = largura-1
+
+    if lim_ver_sup < 0:
+        lim_ver_sup = 0
+
+    if lim_ver_inf >= altura:
+        lim_ver_inf = altura-1
+
+    janela_pesquisa = frame_anterior[lim_hor_esq:lim_hor_drt, lim_ver_sup:lim_ver_inf, 0]
+
+    print janela_pesquisa.shape
+
+    for x in xrange(janela_pesquisa.shape[0]-16):
+        for y in xrange(janela_pesquisa.shape[1]-16):
+            i_bloco = janela_pesquisa[x:x + 16, y:y + 16]
+
+            eam = erro_abs_medio(bloco_p_frame, i_bloco)
+            if eam < eam_min:
+                eam_min = eam
+                bloco_a_codificar = i_bloco
+                coor_bloco_cod = (lim_hor_esq, lim_ver_sup)
 
     return eam_min, coor_bloco_cod, bloco_a_codificar
-
 
 
 # 3.3
@@ -261,9 +272,11 @@ def block_motion_compensation():
 
                     eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((x * 16), (y * 16)))
                     print coor_bloco_cod
-                    print bloco_a_codificar.shape
+                    if bloco_a_codificar.shape != (16,16):
+                        print "MERDA DO CARALHO"
 
-                    frame_predita[coor_bloco_cod[0]:16 + (x * 16), coor_bloco_cod[1]:16 + (y * 16)] = bloco_a_codificar
+                    # frame_predita[coor_bloco_cod[0]:coor_bloco_cod[0] + 16, coor_bloco_cod[1]:coor_bloco_cod[1] + 16] = bloco_a_codificar
+                    frame_predita[(x * 16):16 + (x * 16), (y * 16):16 + (y * 16)] = bloco_a_codificar
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 
@@ -272,7 +285,7 @@ def block_motion_compensation():
 
             cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
-            frame_diff =
+            #frame_diff =
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
@@ -296,18 +309,6 @@ def block_motion_compensation():
 
             entropia(p_frame.ravel(), gera_huffman(h))
         print "========================================================================================================"
-
-
-
-    altura = frame.shape[0]
-    largura = frame.shape[1]
-
-    n_blocos_horizontais = largura / 16
-    n_blocos_verticais = altura / 16
-
-    for i in xrange(n_blocos_horizontais):
-        for z in xrange(n_blocos_verticais):
-            bloco_frame = frame[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
 
 
@@ -413,6 +414,8 @@ def main(coding):
         intra_frame_coding()
     elif coding == "inter":
         inter_frame_coding()
+    elif coding == "block":
+        block_motion_compensation()
 
     print "========================================================================================================"
     print "========================================================================================================"
@@ -420,4 +423,4 @@ def main(coding):
     print
     print
 
-main("inter")
+main("block")

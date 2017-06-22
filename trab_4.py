@@ -212,9 +212,16 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
     if lim_ver_inf >= altura:
         lim_ver_inf = altura-1
 
-    janela_pesquisa = frame_anterior[lim_hor_esq:lim_hor_drt, lim_ver_sup:lim_ver_inf, 0]
+    janela_pesquisa = frame_anterior[lim_ver_sup:lim_ver_inf, lim_hor_esq:lim_hor_drt, 0]
 
-    print janela_pesquisa.shape
+    if janela_pesquisa.shape < (31,31):
+        print janela_pesquisa.shape
+        print frame_anterior.shape
+
+        print lim_hor_esq
+        print lim_hor_drt
+        print lim_ver_sup
+        print lim_ver_inf
 
     for x in xrange(janela_pesquisa.shape[0]-16):
         for y in xrange(janela_pesquisa.shape[1]-16):
@@ -265,15 +272,12 @@ def block_motion_compensation():
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
-            for x in xrange(n_blocos_horizontais):
-                for y in xrange(n_blocos_verticais):
+            for x in xrange(n_blocos_verticais-1):
+                for y in xrange(n_blocos_horizontais-1):
                     bloco_p_frame = p_frame[(x * 16):16 + (x * 16), (y * 16):16 + (y * 16), 0]
                     # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
                     eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((x * 16), (y * 16)))
-                    print coor_bloco_cod
-                    if bloco_a_codificar.shape != (16,16):
-                        print "MERDA DO CARALHO"
 
                     # frame_predita[coor_bloco_cod[0]:coor_bloco_cod[0] + 16, coor_bloco_cod[1]:coor_bloco_cod[1] + 16] = bloco_a_codificar
                     frame_predita[(x * 16):16 + (x * 16), (y * 16):16 + (y * 16)] = bloco_a_codificar
@@ -283,7 +287,7 @@ def block_motion_compensation():
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
 
-            cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
+            cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), frame_predita, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             #frame_diff =
 

@@ -214,17 +214,18 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
 
     janela_pesquisa = frame_anterior[lim_ver_sup:lim_ver_inf, lim_hor_esq:lim_hor_drt, 0]
 
-    if janela_pesquisa.shape < (31,31):
+    if janela_pesquisa.shape < (31, 31):
         print janela_pesquisa.shape
         print frame_anterior.shape
 
-        print lim_hor_esq
-        print lim_hor_drt
         print lim_ver_sup
         print lim_ver_inf
 
-    for x in xrange(janela_pesquisa.shape[0]-16):
-        for y in xrange(janela_pesquisa.shape[1]-16):
+        print lim_hor_esq
+        print lim_hor_drt
+
+    for x in xrange(janela_pesquisa.shape[0] - 16):
+        for y in xrange(janela_pesquisa.shape[1] - 16):
             i_bloco = janela_pesquisa[x:x + 16, y:y + 16]
 
             eam = erro_abs_medio(bloco_p_frame, i_bloco)
@@ -272,15 +273,15 @@ def block_motion_compensation():
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
-            for x in xrange(n_blocos_verticais-1):
-                for y in xrange(n_blocos_horizontais-1):
-                    bloco_p_frame = p_frame[(x * 16):16 + (x * 16), (y * 16):16 + (y * 16), 0]
+            for x in xrange(n_blocos_horizontais-1):
+                for y in xrange(n_blocos_verticais-1):
+                    bloco_p_frame = p_frame[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16), 0]
                     # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
-                    eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((x * 16), (y * 16)))
+                    eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((y * 16), (x * 16)))
 
                     # frame_predita[coor_bloco_cod[0]:coor_bloco_cod[0] + 16, coor_bloco_cod[1]:coor_bloco_cod[1] + 16] = bloco_a_codificar
-                    frame_predita[(x * 16):16 + (x * 16), (y * 16):16 + (y * 16)] = bloco_a_codificar
+                    frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 

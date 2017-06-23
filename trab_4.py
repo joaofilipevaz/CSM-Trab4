@@ -250,19 +250,14 @@ def block_motion_compensation():
     print "Analise INTER-FRAME com BLOCK MOTION COMPENSATION"
     print "========================================================================================================"
 
-    # leitura imagem bola
-    # i_frame = cv2.imread("samples/bola_1.tiff")
-
-    # cv2.imwrite("output/bola_iframe_1.jpeg", i_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
-
     dim_janela_pesquisa = 15
+
+    i_frame = cv2.imread("samples/bola_1.tiff")
 
     for i in xrange(1, 12, 1):
 
         if i > 1:
             t0 = time()
-
-            frame_anterior = cv2.imread("samples/bola_{}.tiff".format(i-1))
 
             p_frame = cv2.imread("samples/bola_{}.tiff".format(i))
 
@@ -273,27 +268,27 @@ def block_motion_compensation():
 
             frame_predita = np.zeros((altura, largura))
 
-            xy_motion = np.zeros((altura, largura))
-
-            temp = []
-
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
+
+            xy_motion = np.zeros((n_blocos_horizontais, n_blocos_verticais))
 
             for x in xrange(n_blocos_horizontais):
                 for y in xrange(n_blocos_verticais):
                     bloco_p_frame = p_frame[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16), 0]
-                    # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
+                    # bloco_frame_anterior = i_frame[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
-                    eam_min, motion_vector, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame,
+                    eam_min, motion_vector, bloco_a_codificar = fullsearch(i_frame, bloco_p_frame,
                                                                            ((x * 16), (y * 16)), dim_janela_pesquisa)
-
+                    # bloco diferenca ou erro entre a p_frame original e a sua predição
                     bloco_diferenca = bloco_p_frame.astype(np.float) - bloco_a_codificar.astype(np.float)
 
-                    temp.append(motion_vector)
+                    xy_motion.put(motion_vector)
 
+                    # cria frame diferenca
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
 
+                    # frame predita é a bloco estimado mais o erro
                     frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar + bloco_diferenca
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
@@ -307,7 +302,7 @@ def block_motion_compensation():
                         (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             # X, Y = np.meshgrid(np.arange(0, 2 * np.pi, .2), np.arange(0, 2 * np.pi, .2))
-            #X = np.linspace(0, largura, 50)
+            #X = [i for ]
             #Y = np.linspace(1, altura, 50)
             #U = xy_motion[0]
             #V = xy_motion[1]
@@ -328,7 +323,7 @@ def block_motion_compensation():
 
             print "ANALISE FRAME " + str(i)
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(frame_anterior, p_frame))
+            print "SNR = " + str(calculoSNR(i_frame, p_frame))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
             size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))

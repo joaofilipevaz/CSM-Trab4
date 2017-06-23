@@ -38,7 +38,7 @@ def intra_frame_coding():
         # conversão e escrita com factor de qualidade 50
         cv2.imwrite("output/bola_{}.jpeg".format(i), x_bola, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
-        x_bola_desc = cv2.imread("output/bola_{}.jpeg".format(i))
+        x_bola_cod = cv2.imread("output/bola_{}.jpeg".format(i))
 
         t1 = time()
         print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".\
@@ -49,19 +49,19 @@ def intra_frame_coding():
 
         print "ANALISE FRAME " + str(i)
         # calculo SNR bola
-        print "SNR = " + str(calculoSNR(x_bola, x_bola_desc))
+        print "SNR = " + str(calculoSNR(x_bola, x_bola_cod))
 
         size_ini = path.getsize("samples/bola_{}.tiff".format(i))
         size_end = path.getsize("output/bola_{}.jpeg".format(i))
         print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
         print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
         print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-        print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(x_bola_desc))
+        print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(x_bola_cod))
 
         # Calcula o histogram
-        h, bins, patches = plt.hist(x_bola_desc.ravel(), np.max(x_bola_desc), [0, np.max(x_bola_desc)])
+        h, bins, patches = plt.hist(x_bola_cod.ravel(), np.max(x_bola_cod), [0, np.max(x_bola_cod)])
 
-        entropia(x_bola_desc.ravel(), gera_huffman(h))
+        entropia(x_bola_cod.ravel(), gera_huffman(h))
         print "========================================================================================================"
 
 
@@ -114,6 +114,8 @@ def inter_frame_coding():
 
             cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
+            p_frame_cod = cv2.imread("output/bola_pframe_{}.jpeg".format(i))
+
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".\
                 format(i, round(t1 - t0, 4))
@@ -123,20 +125,21 @@ def inter_frame_coding():
 
             print "ANALISE FRAME " + str(i)
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(x_bola, p_frame))
+            print "SNR = " + str(calculoSNR(x_bola, p_frame_cod))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
             size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(p_frame))
+            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(p_frame_cod))
 
             # Calcula o histogram
-            h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
+            h, bins, patches = plt.hist(p_frame_cod.ravel(), np.max(p_frame_cod), [0, np.max(p_frame_cod)])
 
-            entropia(p_frame.ravel(), gera_huffman(h))
+            entropia(p_frame_cod.ravel(), gera_huffman(h))
         print "========================================================================================================"
+
 
     def converte_para_video_inter():
 
@@ -274,7 +277,7 @@ def block_motion_compensation():
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
-            xy_motion = np.zeros((n_blocos_horizontais, n_blocos_verticais))
+            xy_motion = np.zeros(n_blocos_horizontais * n_blocos_verticais)
 
             for x in xrange(n_blocos_horizontais):
                 for y in xrange(n_blocos_verticais):
@@ -286,7 +289,8 @@ def block_motion_compensation():
                     # bloco diferenca ou erro entre a p_frame original e a sua predição
                     bloco_diferenca = bloco_p_frame.astype(np.float) - bloco_a_codificar.astype(np.float)
 
-                    xy_motion[x, y] = motion_vector
+                    xy_motion[x] = motion_vector[0]
+                    xy_motion[y] = motion_vector[1]
 
                     # cria frame diferenca
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
@@ -299,9 +303,7 @@ def block_motion_compensation():
             cv2.imwrite("output/bola_pframe_diferenca_{}.jpeg".format(i), frame_diferenca,
                         (cv2.IMWRITE_JPEG_QUALITY, 50))
 
-            # X, Y = np.meshgrid(np.arange(0, 2 * np.pi, .2), np.arange(0, 2 * np.pi, .2))
-            #X = [i for ]
-            #Y = np.linspace(1, altura, 50)
+            X, Y = np.meshgrid(np.arange(0, largura, 16), np.arange(0, altura, 16))
             #U = xy_motion[0]
             #V = xy_motion[1]
 
@@ -349,6 +351,7 @@ def calculoSNR(imgOrig, imgComp):
     PRuido = np.sum((imgOrig-imgComp)**2.0)
     args = PSinal / PRuido
     return np.round(10.0*np.log10(args), 3)
+
 
 def energia_media_pixel(img_a_transmitir):
     altura = img_a_transmitir.shape[0]
@@ -455,4 +458,4 @@ def main(coding):
     print
     print
 
-main("intra")
+main("inter")

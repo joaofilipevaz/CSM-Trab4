@@ -55,7 +55,7 @@ def intra_frame_coding():
         print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
         print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
         print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-        print "A Energia media por bit é {}".format()
+        print "A Energia media por bit da frame a transmitir é {}".format(energia_media_bit(x_bola_desc))
 
         # Calcula o histogram
         h, bins, patches = plt.hist(x_bola_desc.ravel(), np.max(x_bola_desc), [0, np.max(x_bola_desc)])
@@ -129,6 +129,7 @@ def inter_frame_coding():
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
+            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_bit(p_frame))
 
             # Calcula o histogram
             h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
@@ -324,13 +325,14 @@ def block_motion_compensation():
 
             print "ANALISE FRAME " + str(i)
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(i_frame, p_frame))
+            print "SNR = " + str(calculoSNR(i_frame, frame_diferenca))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
             size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
+            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_bit(frame_diferenca))
 
             # Calcula o histogram
             h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
@@ -353,7 +355,6 @@ def calculoSNR(imgOrig, imgComp):
     return np.round(10.0*np.log10(args), 3)
 
 def energia_media_bit(img_a_transmitir):
-
     emb = 0
     altura = img_a_transmitir.shape[0]
     largura = img_a_transmitir.shape[1]

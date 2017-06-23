@@ -276,10 +276,10 @@ def block_motion_compensation():
             for x in xrange(n_blocos_horizontais):
                 for y in xrange(n_blocos_verticais):
                     bloco_p_frame = p_frame[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16), 0]
-                    # bloco_frame_anterior = i_frame[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
                     eam_min, motion_vector, bloco_a_codificar = fullsearch(i_frame, bloco_p_frame,
                                                                            ((x * 16), (y * 16)), dim_janela_pesquisa)
+
                     # bloco diferenca ou erro entre a p_frame original e a sua predição
                     bloco_diferenca = bloco_p_frame.astype(np.float) - bloco_a_codificar.astype(np.float)
 

@@ -41,7 +41,8 @@ def intra_frame_coding():
         x_bola_desc = cv2.imread("output/bola_{}.jpeg".format(i))
 
         t1 = time()
-        print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,round(t1 - t0, 4))
+        print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".\
+            format(i, round(t1 - t0, 4))
 
         # conversão e escrita com factor de qualidade 50
         # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
@@ -114,8 +115,8 @@ def inter_frame_coding():
             cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             t1 = time()
-            print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
-                                        round(t1 - t0, 4))
+            print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".\
+                format(i, round(t1 - t0, 4))
 
             # conversão e escrita com factor de qualidade 50
             # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
@@ -149,8 +150,8 @@ def inter_frame_coding():
 
         bola.write(iframe)
 
-        for i in xrange(2, 12, 1):
-            pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(i)) - 128
+        for z in xrange(2, 12, 1):
+            pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(z)) - 128
 
             bola.write(iframe + pframe)
             # car.write(cv2.imread("output/car{}.jpeg".format(i)))
@@ -293,11 +294,6 @@ def block_motion_compensation():
                     # frame predita é a bloco estimado mais o erro
                     frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar + bloco_diferenca
 
-            # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
-
-            # leitura imagem car
-            # x_car = cv2.imread("samples/car{}.bmp".format(i))
-
             cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), frame_predita, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             cv2.imwrite("output/bola_pframe_diferenca_{}.jpeg".format(i), frame_diferenca,
@@ -310,7 +306,7 @@ def block_motion_compensation():
             #V = xy_motion[1]
 
             #plt.title('Arrows scale with plot width, not view')
-            #Q = plt.quiver(U, V, units='width')
+            #Q = plt.quiver(X, Y, U, V, units='width')
             #qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E',
             #                   coordinates='figure')
 

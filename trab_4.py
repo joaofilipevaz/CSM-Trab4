@@ -182,12 +182,10 @@ numa janela de pesquisa (-15 a +15) da I-frame;
 """
 
 
-def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
+def fullsearch(frame_anterior, bloco_p_frame, pos_bloco, dim_janela_pesquisa):
 
     altura = frame_anterior.shape[0]
     largura = frame_anterior.shape[1]
-
-    dim_janela_pesquisa = 15
 
     eam_min = sys.maxint
 
@@ -225,8 +223,8 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
 
     if janela_pesquisa.shape >= (31, 31):
 
-        for x in xrange(janela_pesquisa.shape[0] - dim_janela_pesquisa):
-            for y in xrange(janela_pesquisa.shape[1] - dim_janela_pesquisa):
+        for x in xrange(janela_pesquisa.shape[1] - dim_janela_pesquisa):
+            for y in xrange(janela_pesquisa.shape[0] - dim_janela_pesquisa):
                 i_bloco = janela_pesquisa[y:y + 16, x:x + 16]
 
                 eam = erro_abs_medio(bloco_p_frame, i_bloco)
@@ -257,6 +255,8 @@ def block_motion_compensation():
 
     # cv2.imwrite("output/bola_iframe_1.jpeg", i_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
+    dim_janela_pesquisa = 15
+
     for i in xrange(1, 12, 1):
 
         if i > 1:
@@ -273,6 +273,10 @@ def block_motion_compensation():
 
             frame_predita = np.zeros((altura, largura))
 
+            xy_motion = np.zeros((altura, largura))
+
+            temp = []
+
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
@@ -281,14 +285,19 @@ def block_motion_compensation():
                     bloco_p_frame = p_frame[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16), 0]
                     # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
-                    eam_min, motion_vector, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((x * 16), (y * 16)))
+                    eam_min, motion_vector, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame,
+                                                                           ((x * 16), (y * 16)), dim_janela_pesquisa)
 
                     bloco_diferenca = bloco_a_codificar.astype(np.float) - bloco_p_frame.astype(np.float)
 
-                    print motion_vector
+                    temp.append(motion_vector)
 
                     frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
+
+            #for x in xrange(largura):
+             #   for y in xrange(altura):
+             #       xy_motion[x][y] = temp.pop()
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 
@@ -300,7 +309,18 @@ def block_motion_compensation():
             cv2.imwrite("output/bola_pframe_diferenca_{}.jpeg".format(i), frame_diferenca,
                         (cv2.IMWRITE_JPEG_QUALITY, 50))
 
-            #frame_diff =
+            # X, Y = np.meshgrid(np.arange(0, 2 * np.pi, .2), np.arange(0, 2 * np.pi, .2))
+            #X = np.linspace(0, largura, 50)
+            #Y = np.linspace(1, altura, 50)
+            #U = xy_motion[0]
+            #V = xy_motion[1]
+
+            #plt.title('Arrows scale with plot width, not view')
+            #Q = plt.quiver(U, V, units='width')
+            #qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E',
+            #                   coordinates='figure')
+
+            #plt.show()
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,

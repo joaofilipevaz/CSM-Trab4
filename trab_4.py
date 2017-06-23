@@ -55,7 +55,7 @@ def intra_frame_coding():
         print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
         print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
         print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-        print "A Energia media por bit da frame a transmitir é {}".format(energia_media_bit(x_bola_desc))
+        print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(x_bola_desc))
 
         # Calcula o histogram
         h, bins, patches = plt.hist(x_bola_desc.ravel(), np.max(x_bola_desc), [0, np.max(x_bola_desc)])
@@ -129,7 +129,7 @@ def inter_frame_coding():
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_bit(p_frame))
+            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(p_frame))
 
             # Calcula o histogram
             h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
@@ -332,7 +332,7 @@ def block_motion_compensation():
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_bit(frame_diferenca))
+            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(frame_diferenca))
 
             # Calcula o histogram
             h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
@@ -354,14 +354,10 @@ def calculoSNR(imgOrig, imgComp):
     args = PSinal / PRuido
     return np.round(10.0*np.log10(args), 3)
 
-def energia_media_bit(img_a_transmitir):
-    emb = 0
+def energia_media_pixel(img_a_transmitir):
     altura = img_a_transmitir.shape[0]
     largura = img_a_transmitir.shape[1]
-    for x in xrange(largura):
-        for y in xrange(altura):
-            emb += np.abs(img_a_transmitir[y][x]**2.)
-
+    emb = np.sum(np.abs(img_a_transmitir[:][:][0]**2.))
     return emb / (altura * largura)
 
 
@@ -463,4 +459,4 @@ def main(coding):
     print
     print
 
-main("block")
+main("intra")

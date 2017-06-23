@@ -277,10 +277,14 @@ def block_motion_compensation():
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
-            xy_motion = np.zeros(n_blocos_horizontais * n_blocos_verticais)
+            x_motion = np.zeros(n_blocos_horizontais * n_blocos_verticais)
+            y_motion = np.zeros(n_blocos_horizontais * n_blocos_verticais)
+
+            count = 0
 
             for x in xrange(n_blocos_horizontais):
                 for y in xrange(n_blocos_verticais):
+
                     bloco_p_frame = p_frame[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16), 0]
 
                     eam_min, motion_vector, bloco_a_codificar = fullsearch(i_frame, bloco_p_frame,
@@ -289,8 +293,8 @@ def block_motion_compensation():
                     # bloco diferenca ou erro entre a p_frame original e a sua predição
                     bloco_diferenca = bloco_p_frame.astype(np.float) - bloco_a_codificar.astype(np.float)
 
-                    xy_motion[x] = motion_vector[0]
-                    xy_motion[y] = motion_vector[1]
+                    x_motion[count] = motion_vector[0]
+                    y_motion[count] = motion_vector[1]
 
                     # cria frame diferenca
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
@@ -298,14 +302,16 @@ def block_motion_compensation():
                     # frame predita é a bloco estimado mais o erro
                     frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar + bloco_diferenca
 
+                    count += 1
+
             cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), frame_predita, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             cv2.imwrite("output/bola_pframe_diferenca_{}.jpeg".format(i), frame_diferenca,
                         (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             X, Y = np.meshgrid(np.arange(0, largura, 16), np.arange(0, altura, 16))
-            #U = xy_motion[0]
-            #V = xy_motion[1]
+            U = xy_motion[0]
+            V = xy_motion[1]
 
             #plt.title('Arrows scale with plot width, not view')
             #Q = plt.quiver(X, Y, U, V, units='width')

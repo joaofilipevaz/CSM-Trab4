@@ -288,16 +288,13 @@ def block_motion_compensation():
                     eam_min, motion_vector, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame,
                                                                            ((x * 16), (y * 16)), dim_janela_pesquisa)
 
-                    bloco_diferenca = bloco_a_codificar.astype(np.float) - bloco_p_frame.astype(np.float)
+                    bloco_diferenca = bloco_p_frame.astype(np.float) - bloco_a_codificar.astype(np.float)
 
                     temp.append(motion_vector)
 
-                    frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
 
-            #for x in xrange(largura):
-             #   for y in xrange(altura):
-             #       xy_motion[x][y] = temp.pop()
+                    frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar + bloco_diferenca
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 

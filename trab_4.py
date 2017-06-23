@@ -191,7 +191,7 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
 
     eam_min = sys.maxint
 
-    coor_bloco_cod = (0, 0)
+    motion_vector = None
 
     bloco_a_codificar = np.zeros((16, 16))
 
@@ -204,37 +204,38 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco):
         lim_hor_esq = 0
 
     if lim_hor_drt >= largura:
-        lim_hor_drt = largura-1
+        lim_hor_drt = largura
 
     if lim_ver_sup < 0:
         lim_ver_sup = 0
 
     if lim_ver_inf >= altura:
-        lim_ver_inf = altura-1
+        lim_ver_inf = altura
 
     janela_pesquisa = frame_anterior[lim_ver_sup:lim_ver_inf, lim_hor_esq:lim_hor_drt, 0]
 
     if janela_pesquisa.shape < (31, 31):
         print janela_pesquisa.shape
-        print frame_anterior.shape
 
-        print lim_ver_sup
-        print lim_ver_inf
+        print "lim_ver_sup " + str(lim_ver_sup)
+        print "lim_ver_inf " + str(lim_ver_inf)
 
-        print lim_hor_esq
-        print lim_hor_drt
+        print "lim_hor_esq " + str(lim_hor_esq)
+        print "lim_hor_drt " + str(lim_hor_drt)
 
-    for x in xrange(janela_pesquisa.shape[0] - 16):
-        for y in xrange(janela_pesquisa.shape[1] - 16):
-            i_bloco = janela_pesquisa[x:x + 16, y:y + 16]
+    if janela_pesquisa.shape >= (31, 31):
 
-            eam = erro_abs_medio(bloco_p_frame, i_bloco)
-            if eam < eam_min:
-                eam_min = eam
-                bloco_a_codificar = i_bloco
-                coor_bloco_cod = (lim_hor_esq, lim_ver_sup)
+        for x in xrange(janela_pesquisa.shape[0] - dim_janela_pesquisa):
+            for y in xrange(janela_pesquisa.shape[1] - dim_janela_pesquisa):
+                i_bloco = janela_pesquisa[y:y + 16, x:x + 16]
 
-    return eam_min, coor_bloco_cod, bloco_a_codificar
+                eam = erro_abs_medio(bloco_p_frame, i_bloco)
+                if eam < eam_min:
+                    eam_min = eam
+                    bloco_a_codificar = i_bloco
+                    motion_vector = ((lim_hor_esq + x) - pos_bloco[0], (lim_ver_sup + y) - pos_bloco[1])
+
+    return eam_min, motion_vector, bloco_a_codificar
 
 
 # 3.3
@@ -268,20 +269,26 @@ def block_motion_compensation():
             altura = p_frame.shape[0]
             largura = p_frame.shape[1]
 
+            frame_diferenca = np.zeros((altura, largura))
+
             frame_predita = np.zeros((altura, largura))
 
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
-            for x in xrange(n_blocos_horizontais-1):
-                for y in xrange(n_blocos_verticais-1):
+            for x in xrange(n_blocos_horizontais):
+                for y in xrange(n_blocos_verticais):
                     bloco_p_frame = p_frame[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16), 0]
                     # bloco_frame_anterior = frame_anterior[0 + (z * 16):16 + (z * 16), 0 + (i * 16):16 + (i * 16), 0]
 
-                    eam_min, coor_bloco_cod, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((y * 16), (x * 16)))
+                    eam_min, motion_vector, bloco_a_codificar = fullsearch(frame_anterior, bloco_p_frame, ((x * 16), (y * 16)))
 
-                    # frame_predita[coor_bloco_cod[0]:coor_bloco_cod[0] + 16, coor_bloco_cod[1]:coor_bloco_cod[1] + 16] = bloco_a_codificar
+                    bloco_diferenca = bloco_a_codificar.astype(np.float) - bloco_p_frame.astype(np.float)
+
+                    print motion_vector
+
                     frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar
+                    frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
 
             # p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
 
@@ -289,6 +296,9 @@ def block_motion_compensation():
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
 
             cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), frame_predita, (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+            cv2.imwrite("output/bola_pframe_diferenca_{}.jpeg".format(i), frame_diferenca,
+                        (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             #frame_diff =
 

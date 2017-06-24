@@ -296,7 +296,6 @@ def block_motion_compensation():
                     x_motion.append(motion_vector[0])
                     y_motion.append(motion_vector[1])
 
-
                     # cria frame diferenca
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
 
@@ -314,14 +313,14 @@ def block_motion_compensation():
             U = x_motion
             V = y_motion
 
-            plt.figure(1)
+            plt.figure(i)
             plt.title('Mapa dos Vectores de Movimento - Frame {}'.format(i))
             # img = plt.imread("output/bola_pframe_diferenca_{}.jpeg".format(i))
             # plt.imshow(img, extent=[0, 352, 240, 0])
             plt.quiver(X, Y, U, V, units='xy', scale=0.5)
-            plt.savefig('output/mapa_vectores_movimento_{}.jpeg')
+            plt.savefig('output/mapa_vectores_movimento_{}.jpeg'.format(i))
 
-            plt.show()
+            # plt.show()
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
@@ -340,12 +339,37 @@ def block_motion_compensation():
             print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(frame_diferenca))
 
             # Calcula o histogram
-            plt.figure(2)
+            plt.figure(i+20)
             h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
 
             entropia(p_frame.ravel(), gera_huffman(h))
-            plt.show()
+            # plt.show()
+
         print "========================================================================================================"
+
+    converte_para_video_bmc()
+
+
+def converte_para_video_bmc():
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+
+    bola = cv2.VideoWriter('bola_inter_bmc.avi', fourcc, 20, (352, 240))
+
+    iframe = cv2.imread("output/bola_iframe_1.jpeg")
+
+    bola.write(iframe)
+
+    for z in xrange(2, 12, 1):
+        pframe_mc = cv2.imread("output/bola_pframe_predita_{}.jpeg".format(z))
+
+        bola.write(pframe_mc)
+        # car.write(cv2.imread("output/car{}.jpeg".format(i)))
+
+    bola.release()
+    # car.release()
+    cv2.destroyAllWindows()
 
 
 

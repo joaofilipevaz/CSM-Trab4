@@ -277,8 +277,8 @@ def block_motion_compensation():
             n_blocos_horizontais = largura / 16
             n_blocos_verticais = altura / 16
 
-            x_motion = np.zeros(n_blocos_horizontais * n_blocos_verticais)
-            y_motion = np.zeros(n_blocos_horizontais * n_blocos_verticais)
+            x_motion = []
+            y_motion = []
 
             count = 0
 
@@ -293,8 +293,9 @@ def block_motion_compensation():
                     # bloco diferenca ou erro entre a p_frame original e a sua predição
                     bloco_diferenca = bloco_p_frame.astype(np.float) - bloco_a_codificar.astype(np.float)
 
-                    x_motion[count] = motion_vector[0]
-                    y_motion[count] = motion_vector[1]
+                    x_motion.append(motion_vector[0])
+                    y_motion.append(motion_vector[1])
+
 
                     # cria frame diferenca
                     frame_diferenca[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_diferenca
@@ -310,15 +311,16 @@ def block_motion_compensation():
                         (cv2.IMWRITE_JPEG_QUALITY, 50))
 
             X, Y = np.meshgrid(np.arange(0, largura, 16), np.arange(0, altura, 16))
-            U = xy_motion[0]
-            V = xy_motion[1]
+            U = x_motion
+            V = y_motion
 
-            #plt.title('Arrows scale with plot width, not view')
-            #Q = plt.quiver(X, Y, U, V, units='width')
+            plt.figure(1)
+            plt.title('Mapa dos Vectores de Movimento - Frame {}'.format(i))
+            plt.quiver(X, Y, U, V, units='xy', scale=0.5)
             #qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E',
             #                   coordinates='figure')
 
-            #plt.show()
+            plt.show()
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
@@ -329,7 +331,7 @@ def block_motion_compensation():
 
             print "ANALISE FRAME " + str(i)
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(i_frame, frame_diferenca))
+            print "SNR = " + str(calculoSNR(i_frame[:, :, 0], frame_diferenca))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
             size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
@@ -339,9 +341,11 @@ def block_motion_compensation():
             print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(frame_diferenca))
 
             # Calcula o histogram
+            plt.figure(2)
             h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
 
             entropia(p_frame.ravel(), gera_huffman(h))
+            plt.show()
         print "========================================================================================================"
 
 
@@ -464,4 +468,4 @@ def main(coding):
     print
     print
 
-main("inter")
+main("block")

@@ -316,9 +316,10 @@ def block_motion_compensation():
 
             plt.figure(1)
             plt.title('Mapa dos Vectores de Movimento - Frame {}'.format(i))
+            # img = plt.imread("output/bola_pframe_diferenca_{}.jpeg".format(i))
+            # plt.imshow(img, extent=[0, 352, 240, 0])
             plt.quiver(X, Y, U, V, units='xy', scale=0.5)
-            #qk = plt.quiverkey(Q, 0.9, 0.9, 2, r'$2 \frac{m}{s}$', labelpos='E',
-            #                   coordinates='figure')
+            plt.savefig('output/mapa_vectores_movimento_{}.jpeg')
 
             plt.show()
 
@@ -326,10 +327,8 @@ def block_motion_compensation():
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
                                         round(t1 - t0, 4))
 
-            # conversão e escrita com factor de qualidade 50
-            # x_car_desc = cv2.imwrite("output/car{}.jpeg".format(i), x_car, (cv2.IMWRITE_JPEG_QUALITY, 50))
-
             print "ANALISE FRAME " + str(i)
+
             # calculo SNR bola
             print "SNR = " + str(calculoSNR(i_frame[:, :, 0], frame_diferenca))
 

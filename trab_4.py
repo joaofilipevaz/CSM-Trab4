@@ -141,27 +141,27 @@ def inter_frame_coding():
         print "========================================================================================================"
 
 
-    def converte_para_video_inter():
+def converte_para_video_inter():
 
-        # Define the codec and create VideoWriter object
-        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 
-        bola = cv2.VideoWriter('bola_inter.avi', fourcc, 20, (352, 240))
-        # car = cv2.VideoWriter('car_inter.avi', fourcc, 20, (256, 256))
+    bola = cv2.VideoWriter('bola_inter.avi', fourcc, 20, (352, 240))
+    # car = cv2.VideoWriter('car_inter.avi', fourcc, 20, (256, 256))
 
-        iframe = cv2.imread("output/bola_iframe_1.jpeg")
+    iframe = cv2.imread("output/bola_iframe_1.jpeg")
 
-        bola.write(iframe)
+    bola.write(iframe)
 
-        for z in xrange(2, 12, 1):
-            pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(z)) - 128
+    for z in xrange(2, 12, 1):
+        pframe = cv2.imread("output/bola_pframe_{}.jpeg".format(z)) - 128
 
-            bola.write(iframe + pframe)
-            # car.write(cv2.imread("output/car{}.jpeg".format(i)))
+        bola.write(iframe + pframe)
+        # car.write(cv2.imread("output/car{}.jpeg".format(i)))
 
-        bola.release()
-        # car.release()
-        cv2.destroyAllWindows()
+    bola.release()
+    # car.release()
+    cv2.destroyAllWindows()
 
 
 # 3.1
@@ -389,7 +389,7 @@ def energia_media_pixel(img_a_transmitir):
     altura = img_a_transmitir.shape[0]
     largura = img_a_transmitir.shape[1]
     emb = np.sum(np.abs(img_a_transmitir[:][:][0]**2.))
-    return emb / (altura * largura)
+    return np.round(emb / (altura * largura), 3)
 
 
 def gera_huffman(freq):
@@ -464,7 +464,7 @@ def entropia(x, tabela_codigo):
     # Eficiencia do codigo
     efic = hx / l
 
-    print "A Entropia é de {} bits/símbolo".format(hx)
+    print "A Entropia é de {} bits/símbolo".format(np.round(hx, 3))
     print "O numero médio de bits por símbolo é de {}".format(l)
     print "A eficiência do código é {}".format(efic)
 

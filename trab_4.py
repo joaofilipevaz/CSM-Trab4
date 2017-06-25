@@ -56,7 +56,7 @@ def intra_frame_coding():
         print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
         print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
         print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-        print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(x_bola_cod))
+        print "A Energia media por pixel da frame a transmitir é {}".format(energia_media_pixel(x_bola_cod))
 
         # Calcula o histogram
         h, bins, patches = plt.hist(x_bola_cod.ravel(), np.max(x_bola_cod), [0, np.max(x_bola_cod)])
@@ -132,7 +132,7 @@ def inter_frame_coding():
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(p_frame_cod))
+            print "A Energia media por pixel da frame a transmitir é {}".format(energia_media_pixel(p_frame_cod))
 
             # Calcula o histogram
             h, bins, patches = plt.hist(p_frame_cod.ravel(), np.max(p_frame_cod), [0, np.max(p_frame_cod)])
@@ -283,8 +283,6 @@ def block_motion_compensation():
             x_motion = []
             y_motion = []
 
-            count = 0
-
             for x in xrange(n_blocos_horizontais):
                 for y in xrange(n_blocos_verticais):
 
@@ -304,8 +302,6 @@ def block_motion_compensation():
 
                     # frame predita é a bloco estimado mais o erro
                     frame_predita[(y * 16):16 + (y * 16), (x * 16):16 + (x * 16)] = bloco_a_codificar + bloco_diferenca
-
-                    count += 1
 
             cv2.imwrite("output/bola_pframe_predita_{}.jpeg".format(i), frame_predita, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
@@ -339,7 +335,7 @@ def block_motion_compensation():
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-            print "A Energia media por bit da frame a transmitir é {}".format(energia_media_pixel(frame_diferenca))
+            print "A Energia media por pixel da frame a transmitir é {}".format(energia_media_pixel(frame_diferenca))
 
             # Calcula o histogram
             plt.figure(i+20)
@@ -494,4 +490,4 @@ def main(coding):
     print
     print
 
-main("inter")
+main("intra")

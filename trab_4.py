@@ -96,7 +96,7 @@ def inter_frame_coding():
     print "========================================================================================================"
 
     # leitura imagem bola
-    i_frame = cv2.imread("samples/bola_1.tiff")
+    i_frame = cv2.imread("samples/bola_1.tiff").astype(np.float)
 
     cv2.imwrite("output/bola_iframe_1.jpeg", i_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
@@ -107,7 +107,7 @@ def inter_frame_coding():
         if i > 1:
             t0 = time()
 
-            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)) - i_frame + 128
+            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)).astype(np.float) - i_frame + 128
 
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
@@ -193,6 +193,8 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco, dim_janela_pesquisa):
     altura = frame_anterior.shape[0]
     largura = frame_anterior.shape[1]
 
+    block_size = 16
+
     eam_min = sys.maxint
 
     motion_vector = None
@@ -201,8 +203,8 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco, dim_janela_pesquisa):
 
     lim_hor_esq = pos_bloco[0] - dim_janela_pesquisa
     lim_ver_sup = pos_bloco[1] - dim_janela_pesquisa
-    lim_hor_drt = pos_bloco[0] + 16 + dim_janela_pesquisa
-    lim_ver_inf = pos_bloco[1] + 16 + dim_janela_pesquisa
+    lim_hor_drt = pos_bloco[0] + block_size + dim_janela_pesquisa
+    lim_ver_inf = pos_bloco[1] + block_size + dim_janela_pesquisa
 
     if lim_hor_esq < 0:
         lim_hor_esq = 0
@@ -218,6 +220,7 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco, dim_janela_pesquisa):
 
     janela_pesquisa = frame_anterior[lim_ver_sup:lim_ver_inf, lim_hor_esq:lim_hor_drt, 0]
 
+    # debug
     if janela_pesquisa.shape < (31, 31):
         print janela_pesquisa.shape
 
@@ -231,7 +234,7 @@ def fullsearch(frame_anterior, bloco_p_frame, pos_bloco, dim_janela_pesquisa):
 
         for x in xrange(janela_pesquisa.shape[1] - dim_janela_pesquisa):
             for y in xrange(janela_pesquisa.shape[0] - dim_janela_pesquisa):
-                i_bloco = janela_pesquisa[y:y + 16, x:x + 16]
+                i_bloco = janela_pesquisa[y:y + block_size, x:x + block_size]
 
                 eam = erro_abs_medio(bloco_p_frame, i_bloco)
                 if eam < eam_min:
@@ -491,4 +494,4 @@ def main(coding):
     print
     print
 
-main("block")
+main("inter")

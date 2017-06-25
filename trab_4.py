@@ -400,7 +400,9 @@ def gera_huffman(freq):
     simbolos = [[i] for i in xrange(len(freq))]
 
     # String vazia para guardar os bits resultantes da codificacao
-    bits = ["" for y in xrange(len(freq))]
+    bits = []
+    for y in xrange(len(freq)):
+        bits.append("")
 
     # Cria um array de arrays (numero de ocorrencias,valor, codificação) organizado por ordem crescente
     tabela = sorted(list(t) for t in zip(freq, simbolos, bits))

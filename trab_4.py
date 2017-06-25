@@ -49,7 +49,7 @@ def intra_frame_coding():
 
         print "ANALISE FRAME " + str(i)
         # calculo SNR bola
-        print "SNR = " + str(calculoSNR(x_bola, x_bola_cod))
+        print "SNR = " + str(calculo_snr(x_bola, x_bola_cod))
 
         size_ini = path.getsize("samples/bola_{}.tiff".format(i))
         size_end = path.getsize("output/bola_{}.jpeg".format(i))
@@ -102,19 +102,25 @@ def inter_frame_coding():
 
     for i in xrange(1, 12, 1):
 
+        t0 = time()
+
         x_bola = cv2.imread("samples/bola_{}.tiff".format(i))
 
         if i > 1:
-            t0 = time()
 
-            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)).astype(np.float) - i_frame + 128
+            p_frame = cv2.imread("samples/bola_{}.tiff".format(i)).astype(np.float) - i_frame
 
             # leitura imagem car
             # x_car = cv2.imread("samples/car{}.bmp".format(i))
 
             cv2.imwrite("output/bola_pframe_{}.jpeg".format(i), p_frame, (cv2.IMWRITE_JPEG_QUALITY, 50))
 
-            p_frame_cod = cv2.imread("output/bola_pframe_{}.jpeg".format(i))
+            cv2.imwrite("output/result/bola_inter_{}.jpeg".format(i), (i_frame + p_frame),
+                        (cv2.IMWRITE_JPEG_QUALITY, 50))
+
+            p_frame = cv2.imread("output/bola_pframe_{}.jpeg".format(i))
+
+            p_frame_cod = cv2.imread("output/result/bola_inter_{}.jpeg".format(i))
 
             t1 = time()
             print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".\
@@ -125,14 +131,14 @@ def inter_frame_coding():
 
             print "ANALISE FRAME " + str(i)
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(x_bola, p_frame_cod))
+            print "SNR = " + str(calculo_snr(x_bola, p_frame_cod))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
             size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
-            print "A Energia media por pixel da frame a transmitir é {}".format(energia_media_pixel(p_frame_cod))
+            print "A Energia media por pixel da frame a transmitir é {}".format(energia_media_pixel(p_frame))
 
             # Calcula o histogram
             h, bins, patches = plt.hist(p_frame_cod.ravel(), np.max(p_frame_cod), [0, np.max(p_frame_cod)])
@@ -308,30 +314,26 @@ def block_motion_compensation():
             cv2.imwrite("output/bola_pframe_diferenca_{}.jpeg".format(i), frame_diferenca,
                         (cv2.IMWRITE_JPEG_QUALITY, 50))
 
+            t1 = time()
+            print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".\
+                format(i, round(t1 - t0, 4))
+
             X, Y = np.meshgrid(np.arange(0, largura, 16), np.arange(0, altura, 16))
             U = x_motion
             V = y_motion
 
             plt.figure(i)
             plt.title('Mapa dos Vectores de Movimento - Frame {}'.format(i))
-            # img = plt.imread("output/bola_pframe_diferenca_{}.jpeg".format(i))
-            # plt.imshow(img, extent=[0, 352, 240, 0])
             plt.quiver(X, Y, U, V, units='xy', scale=0.5)
             plt.savefig('output/mapa_vectores_movimento_{}.jpeg'.format(i))
-
-            # plt.show()
-
-            t1 = time()
-            print "O tempo necessário para efectuar a compressão e descompressão da frame {} foi de {} segundos".format(i,
-                                        round(t1 - t0, 4))
 
             print "ANALISE FRAME " + str(i)
 
             # calculo SNR bola
-            print "SNR = " + str(calculoSNR(i_frame[:, :, 0], frame_diferenca))
+            print "SNR = " + str(calculo_snr(i_frame[:, :, 0], frame_predita))
 
             size_ini = path.getsize("samples/bola_{}.tiff".format(i))
-            size_end = path.getsize("output/bola_pframe_{}.jpeg".format(i))
+            size_end = path.getsize("output/bola_pframe_diferenca_{}.jpeg".format(i))
             print "A dimensão da frame original é de {} Kb".format(round(size_ini / 1024., 2))
             print "A dimensão da frame codificada é de {} Kb".format(round(size_end / 1024., 2))
             print "A taxa de compressão conseguida foi de {}".format(1. * size_ini / size_end)
@@ -339,9 +341,10 @@ def block_motion_compensation():
 
             # Calcula o histogram
             plt.figure(i+20)
-            h, bins, patches = plt.hist(p_frame.ravel(), np.max(p_frame), [0, np.max(p_frame)])
+            h, bins, patches = plt.hist(frame_diferenca.astype(np.int).ravel(), np.max(frame_diferenca.astype(np.int)),
+                                        [0, np.max(frame_diferenca.astype(np.int))])
 
-            entropia(p_frame.ravel(), gera_huffman(h))
+            entropia(frame_diferenca.astype(np.int).ravel(), gera_huffman(h))
             # plt.show()
 
         print "========================================================================================================"
@@ -371,18 +374,18 @@ def converte_para_video_bmc():
     cv2.destroyAllWindows()
 
 
-
 """
 Funções Auxiliares
 """
 
 
 # função auxiliar para calcular o SNR entre a imagem original e a comprimida
-def calculoSNR(imgOrig, imgComp):
-    PSinal = np.sum(imgComp**2.0)
-    PRuido = np.sum((imgOrig-imgComp)**2.0)
-    args = PSinal / PRuido
-    return np.round(10.0*np.log10(args), 3)
+def calculo_snr(img_orig, img_comp):
+    # SNR is given as the ratio of the mean value of the signal and the standard deviation of the noise.
+    valor_medio_sinal = np.mean(img_comp.astype(np.float) ** 2)
+    erro = img_orig.astype(np.float) - img_comp.astype(np.float)
+    desvio_medio_erro = np.std(erro)
+    return np.round(10.0*np.log10(valor_medio_sinal / desvio_medio_erro), 3)
 
 
 def energia_media_pixel(img_a_transmitir):
@@ -490,4 +493,4 @@ def main(coding):
     print
     print
 
-main("intra")
+main("block")
